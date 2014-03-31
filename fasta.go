@@ -2,7 +2,7 @@ package fasta
 
 import (
 	"bufio"
-	"os"
+	"io/ioutil"
 	"strings"
 )
 
@@ -14,13 +14,7 @@ type FastaFile struct {
 	DnaSeqs map[string]Dna
 }
 
-func NewFastaFile(filename string) *FastaFile {
-	file, err := os.Open(filename)
-
-	if err != nil {
-		panic("Not a valid file.")
-	}
-
+func NewFastaFileWithStream(stream []byte) *FastaFile {
 	var (
 		text       string
 		dna        []byte
@@ -28,10 +22,14 @@ func NewFastaFile(filename string) *FastaFile {
 		dnaMap     = make(map[string]Dna)
 	)
 
-	scanner := bufio.NewScanner(file)
+	stringStream := string(stream)
 
-	for scanner.Scan() {
-		text = strings.TrimSpace(scanner.Text())
+	for _, line := range strings.Split(stringStream, "\n") {
+		if len(line) == 0 {
+			continue
+		}
+
+		text = strings.TrimSpace(line)
 
 		// Hit an identifier line
 		if text[0] == '>' {
@@ -56,4 +54,14 @@ func NewFastaFile(filename string) *FastaFile {
 
 	f := FastaFile{DnaSeqs: dnaMap}
 	return &f
+}
+
+func NewFastaFileWithPath(filename string) *FastaFile {
+	contents, err := ioutil.ReadFile(filename)
+
+	if err != nil {
+		panic("Not a valid file.")
+	}
+
+	return NewFastaFileWithStream(contents)
 }
