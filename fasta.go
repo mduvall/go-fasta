@@ -1,7 +1,6 @@
 package fasta
 
 import (
-	"bufio"
 	"io/ioutil"
 	"strings"
 )
